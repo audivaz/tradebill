@@ -189,3 +189,60 @@ function exportPDF() {
   };
   html2pdf().set(opt).from(element).save();
 }
+
+
+
+// Save current invoice state to localStorage
+function saveInvoiceToHistory() {
+  const history = JSON.parse(localStorage.getItem('tradebill_history') || '[]');
+  const record = {
+    id: Date.now(),
+    invoiceNumber: invoiceNumberInput.value,
+    clientName: clientNameInput.value,
+    companyName: companyNameInput.value,
+    date: new Date().toLocaleDateString(),
+    total: calculateTotals().grandTotal,
+    lineItems: [...lineItems]
+  };
+  
+  history.unshift(record);
+  localStorage.setItem('tradebill_history', JSON.stringify(history));
+  alert(`Invoice #${record.invoiceNumber} saved!`);
+}
+
+// Render saved history list
+function renderHistory() {
+  const historyList = document.getElementById('historyList');
+  const history = JSON.parse(localStorage.getItem('tradebill_history') || '[]');
+  
+  if (history.length === 0) {
+    historyList.innerHTML = `<p class="text-slate-400 italic">No saved invoices found.</p>`;
+    return;
+  }
+
+  historyList.innerHTML = history.map(item => `
+    <div class="p-3 border rounded-lg bg-slate-50 flex justify-between items-center">
+      <div>
+        <p class="font-bold text-slate-800">#${item.invoiceNumber} — ${item.clientName}</p>
+        <p class="text-slate-400 text-[10px]">${item.date} • $${item.total.toFixed(2)}</p>
+      </div>
+      <button onclick="loadInvoice(${item.id})" class="px-2 py-1 bg-emerald-100 text-emerald-800 font-semibold rounded hover:bg-emerald-200">Load</button>
+    </div>
+  `).join('');
+}
+
+// Reload historical record back into the active editor
+window.loadInvoice = function(id) {
+  const history = JSON.parse(localStorage.getItem('tradebill_history') || '[]');
+  const item = history.find(record => record.id === id);
+  if (!item) return;
+
+  invoiceNumberInput.value = item.invoiceNumber;
+  clientNameInput.value = item.clientName;
+  companyNameInput.value = item.companyName;
+  lineItems = [...item.lineItems];
+
+  renderInputs();
+  renderPreview();
+  document.getElementById('historyModal').classList.add('hidden');
+};

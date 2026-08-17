@@ -110,6 +110,31 @@
 
   </main>
 
+
+  <!-- Update Header Action Buttons -->
+  <div class="space-x-2">
+    <button id="btnHistory" class="px-3 py-1.5 text-sm bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition">History</button>
+    <button id="btnSaveProfile" class="px-3 py-1.5 text-sm bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition">Save Invoice</button>
+    <button id="btnExportPdf" class="px-4 py-1.5 text-sm bg-emerald-500 hover:bg-emerald-600 font-semibold text-slate-900 rounded shadow transition">Export PDF</button>
+  </div>
+
+  <!-- History Drawer Modal -->
+  <div id="historyModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+    <div class="bg-white w-full max-w-md h-full p-6 shadow-xl flex flex-col justify-between overflow-y-auto">
+      <div>
+        <div class="flex justify-between items-center border-b pb-4 mb-4">
+          <h3 class="text-lg font-bold text-slate-900">Saved Invoices</h3>
+          <button id="btnCloseHistory" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+        </div>
+        <div id="historyList" class="space-y-3 text-xs">
+          <!-- Dynamic invoice history items load here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
   <script src="./Javascript/app.js"></script>
 </body>
 </html>
