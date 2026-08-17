@@ -1,0 +1,40 @@
+/* Custom Utility and Print Rules */
+
+@media print {
+  body {
+    background-color: #ffffff;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-shadow-none {
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+
+/* Canvas Height & Element Constraints */
+.min-h-600 {
+  min-height: 600px;
+}
+
+/* Logo Preview Max Dimensions */
+#previewLogo {
+  max-height: 3.5rem;
+  max-width: 12rem;
+  object-fit: contain;
+}
+
+/* Interactive Row Smoothness */
+.item-row {
+  transition: background-color 0.15s ease-in-out;
+}
+
+/* Empty State Table Styling */
+.empty-table-msg {
+  padding: 2rem 0;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  font-style: italic;
+}

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradeBill — Field Service Estimate & Invoice Generator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- html2pdf.js CDN for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- External Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased">
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-slate-900 text-white py-4 px-6 shadow-md flex justify-between items-center no-print">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 bg-emerald-500 rounded flex items-center justify-center font-bold text-slate-900">TB</div>
+      <h1 class="text-xl font-bold tracking-wide">TradeBill</h1>
+    </div>
+    <div class="space-x-2">
+      <button id="btnSaveProfile" class="px-3 py-1.5 text-sm bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition">Save Profile</button>
+      <button id="btnExportPdf" class="px-4 py-1.5 text-sm bg-emerald-500 hover:bg-emerald-600 font-semibold text-slate-900 rounded shadow transition">Export PDF</button>
+    </div>
+  </header>
+
+  <!-- Main App Grid -->
+  <main class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Column: Controls & Input Form -->
+    <section class="lg:col-span-5 bg-white p-5 rounded-lg shadow-sm border border-slate-200 space-y-6 no-print">
+      <h2 class="text-lg font-bold text-slate-900 border-b pb-2">Business & Client Info</h2>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="logoInput">Company Logo</label>
+          <input type="file" id="logoInput" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="companyName">Your Company Name</label>
+            <input type="text" id="companyName" value="Apex HVAC & Field Services" class="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-emerald-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="clientName">Client Name</label>
+            <input type="text" id="clientName" value="John Doe" class="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-emerald-500 outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="invoiceNum">Invoice #</label>
+            <input type="text" id="invoiceNum" value="INV-2026-001" class="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-emerald-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="taxRate">Tax (%)</label>
+            <input type="number" id="taxRate" value="8.00" step="0.01" class="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-emerald-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" for="discountRate">Disc (%)</label>
+            <input type="number" id="discountRate" value="0.00" step="0.01" class="w-full text-sm p-2 border border-slate-300 rounded focus:ring-1 focus:ring-emerald-500 outline-none">
+          </div>
+        </div>
+      </div>
+
+      <!-- Line Items Controls -->
+      <div class="space-y-4 border-t pt-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-bold text-slate-900">Line Items</h2>
+          <button id="btnAddItem" class="text-xs font-semibold bg-emerald-50 text-emerald-700 px-3 py-1 rounded hover:bg-emerald-100 transition">+ Add Item</button>
+        </div>
+
+        <div id="itemsContainer" class="space-y-3">
+          <!-- Dynamic Row Inputs Injected Here -->
+        </div>
+      </div>
+
+      <!-- Payment Terms & Notes -->
+      <div class="space-y-3 border-t pt-4">
+        <label for="paymentNotes" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Payment Terms / Notes</label>
+        <textarea id="paymentNotes" rows="2" placeholder="e.g. Payment due within 15 days via Zelle or Venmo." class="w-full text-xs p-2 border border-slate-300 rounded focus:ring-1 focus:ring-emerald-500 outline-none">Payment due within 15 days. Thank you for your business!</textarea>
+      </div>
+    </section>
+
+    <!-- Right Column: Live Invoice Canvas Preview -->
+    <section class="lg:col-span-7">
+      <div id="invoiceCanvas" class="bg-white p-8 rounded-lg shadow-sm border border-slate-200 print-shadow-none min-h-[600px] flex flex-col justify-between">
+        <div>
+          <!-- Header Block -->
+          <div class="flex justify-between items-start border-b pb-6 mb-6">
+            <div>
+              <img id="previewLogo" src="" alt="Company Logo" class="h-12 mb-3 hidden object-contain">
+              <h1 id="previewCompany" class="text-2xl font-bold text-slate-900">Apex HVAC & Field Services</h1>
+              <p class="text-xs text-slate-500">Licensed & Insured Field Service Provider</p>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2.5 py-1 text-xs font-bold bg-slate-100 text-slate-700 rounded uppercase tracking-wider mb-2">Estimate / Invoice</span>
+              <p class="text-sm font-semibold text-slate-800" id="previewInvoiceNum">INV-2026-001</p>
+              <p class="text-xs text-slate-400" id="previewDate"></p>
+            </div>
+          </div>
+
+          <!-- Client Details -->
+          <div class="mb-6">
+            <p class="text-xs uppercase font-bold text-slate-400 mb-1">Billed To:</p>
+            <p id="previewClient" class="text-base font-semibold text-slate-800">John Doe</p>
+          </div>
+
+          <!-- Items Table -->
+          <table class="w-full text-left mb-6">
+            <thead>
+              <tr class="border-b text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                <th class="py-2">Description</th>
+                <th class="py-2 text-center">Qty / Hrs</th>
+                <th class="py-2 text-right">Rate</th>
+                <th class="py-2 text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody id="previewTableBody" class="divide-y text-sm">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <!-- Totals Block -->
+          <div class="border-t pt-4 flex justify-end">
+            <div class="w-64 space-y-2 text-right">
+              <div class="flex justify-between text-sm text-slate-600">
+                <span>Subtotal:</span>
+                <span id="subtotalVal" class="font-medium">$0.00</span>
+              </div>
+              <div class="flex justify-between text-sm text-emerald-600">
+                <span>Discount:</span>
+                <span id="discountVal" class="font-medium">-$0.00</span>
+              </div>
+              <div class="flex justify-between text-sm text-slate-600">
+                <span>Tax:</span>
+                <span id="taxVal" class="font-medium">$0.00</span>
+              </div>
+              <div class="flex justify-between text-base font-bold text-slate-900 border-t pt-2">
+                <span>Total:</span>
+                <span id="totalVal" class="text-emerald-600">$0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes Output Block inside Canvas -->
+          <div class="border-t pt-4 mt-6 text-xs text-slate-500">
+            <p class="font-semibold text-slate-700 mb-1">Notes & Payment Terms:</p>
+            <p id="previewNotes">Payment due within 15 days. Thank you for your business!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- External Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
