@@ -246,3 +246,31 @@ window.loadInvoice = function(id) {
   renderPreview();
   document.getElementById('historyModal').classList.add('hidden');
 };
+
+
+
+
+// DOM Element Selectors
+const btnHistory = document.getElementById('btnHistory');
+const btnCloseHistory = document.getElementById('btnCloseHistory');
+const historyModal = document.getElementById('historyModal');
+const btnSaveProfile = document.getElementById('btnSaveProfile');
+
+// Event Listeners
+btnSaveProfile.addEventListener('click', saveInvoiceToHistory);
+
+btnHistory.addEventListener('click', () => {
+  renderHistory();
+  historyModal.classList.remove('hidden');
+});
+
+btnCloseHistory.addEventListener('click', () => {
+  historyModal.classList.add('hidden');
+});
+
+// Close modal when clicking outside the container
+historyModal.addEventListener('click', (e) => {
+  if (e.target === historyModal) {
+    historyModal.classList.add('hidden');
+  }
+});
