@@ -38,3 +38,53 @@
   font-size: 0.875rem;
   font-style: italic;
 }
+
+
+
+
+
+
+@media print {
+  /* Hide the web application shell and UI elements */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide input forms, sidebars, modal drawers, and buttons */
+  .app-sidebar,
+  .form-container,
+  .invoice-history-modal,
+  .modal-backdrop,
+  .btn,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Expand invoice preview canvas to full print page */
+  .invoice-preview-container,
+  .invoice-preview {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+  }
+
+  /* Ensure background colors/accent bars render properly in PDF export */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Page setup setup */
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+}
