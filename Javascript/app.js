@@ -13,7 +13,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// DOM Elements
+// DOM Elements - Main Controls
 const itemsContainer = document.getElementById('itemsContainer');
 const btnAddRow = document.getElementById('btnAddRow');
 const btnExportPdf = document.getElementById('btnExportPdf');
@@ -26,6 +26,12 @@ const invoiceNumberInput = document.getElementById('invoiceNumber');
 const taxRateInput = document.getElementById('taxRate');
 const discountRateInput = document.getElementById('discountRate');
 const invoiceNotesInput = document.getElementById('invoiceNotes');
+
+// DOM Elements - History & Modal
+const btnHistory = document.getElementById('btnHistory');
+const btnCloseHistory = document.getElementById('btnCloseHistory');
+const historyModal = document.getElementById('historyModal');
+const btnSaveProfile = document.getElementById('btnSaveProfile');
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
@@ -46,6 +52,24 @@ function attachEventListeners() {
   });
 
   btnExportPdf.addEventListener('click', exportPDF);
+
+  // History & Storage Listeners
+  btnSaveProfile.addEventListener('click', saveInvoiceToHistory);
+
+  btnHistory.addEventListener('click', () => {
+    renderHistory();
+    historyModal.classList.remove('hidden');
+  });
+
+  btnCloseHistory.addEventListener('click', () => {
+    historyModal.classList.add('hidden');
+  });
+
+  historyModal.addEventListener('click', (e) => {
+    if (e.target === historyModal) {
+      historyModal.classList.add('hidden');
+    }
+  });
 }
 
 // Render dynamic input rows on control panel
@@ -190,48 +214,62 @@ function exportPDF() {
   html2pdf().set(opt).from(element).save();
 }
 
+// ==========================================
+// INVOICE HISTORY & LOCALSTORAGE LOGIC
+// ==========================================
 
-
-// Save current invoice state to localStorage
+// Save Current Invoice to localStorage
 function saveInvoiceToHistory() {
   const history = JSON.parse(localStorage.getItem('tradebill_history') || '[]');
+  const totals = calculateTotals();
+  
   const record = {
     id: Date.now(),
-    invoiceNumber: invoiceNumberInput.value,
-    clientName: clientNameInput.value,
-    companyName: companyNameInput.value,
+    invoiceNumber: invoiceNumberInput.value || 'Draft',
+    clientName: clientNameInput.value || 'Unnamed Client',
+    companyName: companyNameInput.value || '',
     date: new Date().toLocaleDateString(),
-    total: calculateTotals().grandTotal,
-    lineItems: [...lineItems]
+    total: totals.grandTotal || 0,
+    lineItems: [...lineItems],
+    taxRate: taxRateInput.value,
+    discountRate: discountRateInput.value,
+    notes: invoiceNotesInput.value
   };
   
   history.unshift(record);
   localStorage.setItem('tradebill_history', JSON.stringify(history));
-  alert(`Invoice #${record.invoiceNumber} saved!`);
+  alert(`Invoice #${record.invoiceNumber} saved to history!`);
 }
 
-// Render saved history list
+// Render History List inside Modal
 function renderHistory() {
   const historyList = document.getElementById('historyList');
   const history = JSON.parse(localStorage.getItem('tradebill_history') || '[]');
   
   if (history.length === 0) {
-    historyList.innerHTML = `<p class="text-slate-400 italic">No saved invoices found.</p>`;
+    historyList.innerHTML = `<p class="text-slate-400 italic text-center py-4">No saved invoices found.</p>`;
     return;
   }
 
   historyList.innerHTML = history.map(item => `
-    <div class="p-3 border rounded-lg bg-slate-50 flex justify-between items-center">
+    <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex justify-between items-center hover:border-slate-300 transition">
       <div>
         <p class="font-bold text-slate-800">#${item.invoiceNumber} — ${item.clientName}</p>
-        <p class="text-slate-400 text-[10px]">${item.date} • $${item.total.toFixed(2)}</p>
+        <p class="text-slate-500 text-[11px]">${item.date} • $${Number(item.total).toFixed(2)}</p>
       </div>
-      <button onclick="loadInvoice(${item.id})" class="px-2 py-1 bg-emerald-100 text-emerald-800 font-semibold rounded hover:bg-emerald-200">Load</button>
+      <div class="flex items-center space-x-1.5">
+        <button onclick="loadInvoice(${item.id})" class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-semibold rounded text-xs hover:bg-emerald-200 transition">
+          Load
+        </button>
+        <button onclick="deleteInvoice(${item.id}, event)" class="px-2 py-1 text-slate-400 hover:text-red-500 rounded text-xs transition">
+          &times;
+        </button>
+      </div>
     </div>
   `).join('');
 }
 
-// Reload historical record back into the active editor
+// Load a Saved Invoice Back into Active State
 window.loadInvoice = function(id) {
   const history = JSON.parse(localStorage.getItem('tradebill_history') || '[]');
   const item = history.find(record => record.id === id);
@@ -240,37 +278,22 @@ window.loadInvoice = function(id) {
   invoiceNumberInput.value = item.invoiceNumber;
   clientNameInput.value = item.clientName;
   companyNameInput.value = item.companyName;
+  if (item.taxRate !== undefined) taxRateInput.value = item.taxRate;
+  if (item.discountRate !== undefined) discountRateInput.value = item.discountRate;
+  if (item.notes !== undefined) invoiceNotesInput.value = item.notes;
+  
   lineItems = [...item.lineItems];
 
   renderInputs();
   renderPreview();
-  document.getElementById('historyModal').classList.add('hidden');
+  historyModal.classList.add('hidden');
 };
 
-
-
-
-// DOM Element Selectors
-const btnHistory = document.getElementById('btnHistory');
-const btnCloseHistory = document.getElementById('btnCloseHistory');
-const historyModal = document.getElementById('historyModal');
-const btnSaveProfile = document.getElementById('btnSaveProfile');
-
-// Event Listeners
-btnSaveProfile.addEventListener('click', saveInvoiceToHistory);
-
-btnHistory.addEventListener('click', () => {
+// Delete Saved Invoice
+window.deleteInvoice = function(id, event) {
+  event.stopPropagation();
+  let history = JSON.parse(localStorage.getItem('tradebill_history') || '[]');
+  history = history.filter(record => record.id !== id);
+  localStorage.setItem('tradebill_history', JSON.stringify(history));
   renderHistory();
-  historyModal.classList.remove('hidden');
-});
-
-btnCloseHistory.addEventListener('click', () => {
-  historyModal.classList.add('hidden');
-});
-
-// Close modal when clicking outside the container
-historyModal.addEventListener('click', (e) => {
-  if (e.target === historyModal) {
-    historyModal.classList.add('hidden');
-  }
-});
+};
