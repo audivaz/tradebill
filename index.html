@@ -24,6 +24,11 @@
   <!-- Top Navigation Bar -->
   <header class="bg-slate-900 text-white py-4 px-6 shadow-md flex justify-between items-center no-print">
     <div class="flex items-center space-x-2">
+      <div class="bg-emerald-500 text-slate-900 font-black px-2 py-1 rounded text-xs tracking-wider">TB</div>
+      <span class="font-bold text-sm tracking-wide">TradeBill</span>
+    </div>
+
+    <div class="flex items-center space-x-2">
       <button id="btnHistory" class="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-100 rounded border border-slate-700 transition">
         History
       </button>
@@ -113,23 +118,20 @@
 
   </main>
 
-
   <!-- History Drawer Modal -->
   <div id="historyModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
-  <div class="bg-white w-full max-w-sm h-full p-5 shadow-2xl flex flex-col justify-between overflow-y-auto">
-    <div>
-      <div class="flex justify-between items-center border-b border-slate-200 pb-3 mb-4">
-        <h3 class="text-base font-bold text-slate-900">Invoice History</h3>
-        <button id="btnCloseHistory" class="text-slate-400 hover:text-slate-600 text-2xl leading-none font-bold">&times;</button>
-      </div>
-      <div id="historyList" class="space-y-2.5 text-xs">
-        <!-- Saved history items render here -->
+    <div class="bg-white w-full max-w-sm h-full p-5 shadow-2xl flex flex-col justify-between overflow-y-auto">
+      <div>
+        <div class="flex justify-between items-center border-b border-slate-200 pb-3 mb-4">
+          <h3 class="text-base font-bold text-slate-900">Invoice History</h3>
+          <button id="btnCloseHistory" class="text-slate-400 hover:text-slate-600 text-2xl leading-none font-bold">&times;</button>
+        </div>
+        <div id="historyList" class="space-y-2.5 text-xs">
+          <!-- Saved history items render here -->
+        </div>
       </div>
     </div>
-   </div>
   </div>
-
-
 
   <script src="./Javascript/app.js"></script>
 </body>
